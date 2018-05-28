@@ -2,13 +2,15 @@
 #With modifications based on a solution posted by Yanick Rochon on stack overflow
 
 ### Variables ###
-TARGET = SPFFT
+TARGET = SPFFT-client
 
 SRC_DIR = src
+SAMPDIR = samples
 OBJ_DIR = obj
 BUILDDIR = build
 
 SOURCES  := $(wildcard $(SRC_DIR)/*.c)
+SOURCES  += $(SAMPDIR)/sampleClient.c
 INCLUDES := $(wildcard $(SRC_DIR)/*.h)
 OBJECTS  := $(SOURCES:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 
