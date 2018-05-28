@@ -3,7 +3,7 @@
 int main(int argc, char* args[]){
 	FILE *testFile = fopen("testFile", "wb");
 
-	spfft_getFile("testFile", testFile);
+	spfft_getFile(NULL, "testFile", testFile);
 
 	return fclose(testFile);
 }
