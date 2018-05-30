@@ -6,23 +6,7 @@ struct spfftc_iface {
 	TCPsocket sock;
 };
 
-int spfftc_init(){
-	//Init SDL
-	if(SDL_Init(0) == -1){
-		fprintf(stderr, "SDL_Init: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	//Init SDL_net
-	if(SDLNet_Init() == -1){
-		fprintf(stderr, "SDLNet_Init: %s\n", SDLNet_GetError());
-		return 2;
-	}
-
-	return 0;
-}
-
-spfftc_iface spfftc_configureInterface(char *IP, __uint16_t port){
+spfftc_iface spfftc_connectInterface(char *IP, __uint16_t port){
 	printf("Attempting connection to %s:%d\n", IP, port);
 	IPaddress addr;
 	//Resolve server details into IPaddress type
