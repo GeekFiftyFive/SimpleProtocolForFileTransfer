@@ -36,12 +36,20 @@ int spfftc_getFile(spfftc_iface iface, char *path, FILE *fp){
 	__uint8_t waiting = 1;
 	SDLNet_TCP_Send(iface -> sock, message, strlen(message) + 1);
 
+	Uint32 start = SDL_GetTicks();
+	__uint32_t bytes = 0;
+
 	while(waiting){
 		SDLNet_TCP_Recv(iface -> sock, buffer, BUFFER_SIZE);
 		if(buffer[0] < BUFFER_SIZE - 1) waiting = 0;
-		printf("Bytes in message: %d\n", buffer[0]);
+		bytes += buffer[0];
 		fwrite(buffer + 1, 1, buffer[0], fp);
 	}
+
+	Uint32 end = SDL_GetTicks();
+	end -= start;
+	float duration = end / 1000;
+	printf("Transferred %u bytes in %f seconds (%f MiB/s)\n", bytes, duration, ((float) bytes / 1000000) / duration);
 	
     return 0;
 }

@@ -42,7 +42,7 @@ void pollRequests(spffts_iface iface){
         len = SDLNet_TCP_Recv(client, message, 255);
         printf("Message: %s\n", message);
         //TODO: Parse message
-        FILE *fp = fopen("toUpload.jpg", "r");
+        FILE *fp = fopen("toUpload", "r");
 
         __uint8_t reading = 1;
         size_t total = 0;
@@ -53,7 +53,7 @@ void pollRequests(spffts_iface iface){
             message[0] = read;
             SDLNet_TCP_Send(client, message, 255);
         }
-        printf("Read %d bytes\n", total);
+        printf("Read %u bytes\n", total);
         SDLNet_TCP_Close(client);
         fclose(fp);
         break;
