@@ -4,7 +4,7 @@
 
 int main(int argc, char* args[]){
     if(spfft_init()) return 1;
-    spffts_iface iface = spffts_openInterface(8080, 100);
+    spffts_iface iface = spffts_openInterface("ipc://localhost:8080", 100);
     pollRequests(iface);
     return 0;
 }

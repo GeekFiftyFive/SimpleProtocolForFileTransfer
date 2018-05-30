@@ -6,7 +6,7 @@ int main(int argc, char* args[]){
 
 	if(spfft_init()) return 1;
 
-	spfftc_iface iface = spfftc_connectInterface("localhost", 8080);
+	spfftc_iface iface = spfftc_connectInterface("ipc://localhost:8080", 8080);
 
 	if(!iface) return 2;
 

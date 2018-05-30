@@ -1,48 +1,34 @@
 #include "spfft-server.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_net.h>
+#include <nanomsg/nn.h>
+#include <nanomsg/reqrep.h>
 
 #define BUFFER_SIZE 20000
 
 struct spffts_iface {
-    TCPsocket sock;
+    int sock;
     __uint32_t delay;
 };
 
-spffts_iface spffts_openInterface(__uint16_t port, __uint32_t delay){
-    IPaddress addr;
-    //Resolve port into IPAddress type
-    if(SDLNet_ResolveHost(&addr,NULL,port) == -1){
-		fprintf(stderr, "SDLNet_ResolveHost: %s\n",SDLNet_GetError());
-		return NULL;
-	}
-
-    //Create interface
+spffts_iface spffts_openInterface(char *IP, __uint32_t delay){
+   	//Create interface
     spffts_iface iface = malloc(sizeof(*iface));
-    iface -> sock = SDLNet_TCP_Open(&addr);
+    iface -> sock = nn_socket(AF_SP, NN_REP);
     iface -> delay = delay;
-    if(!iface -> sock){
-        fprintf(stderr, "SDLNet_TCP_Open: %s\n", SDLNet_GetError());
-        free(iface);
-        iface = NULL;
-    }
+    if(iface -> sock < 0 || nn_bind(iface -> sock, IP) < 0)
+		fprintf(stderr, "Error binding socket with IP %s\n", IP);
 
     return iface;
 }
 
 void pollRequests(spffts_iface iface){
-    TCPsocket client;
-    char message[BUFFER_SIZE];
+    char *message = NULL;
     char test[4];
     int len;
     while(1){
-        client = SDLNet_TCP_Accept(iface -> sock);
-        if(!client) {
-            SDL_Delay(iface -> delay);
-            continue;
-        }
+        len = nn_recv(iface -> sock, message, NN_MSG, 0);
 
-        len = SDLNet_TCP_Recv(client, message, BUFFER_SIZE);
         printf("Message: %s\n", message);
         //TODO: Parse message
         FILE *fp = fopen("toUpload", "r");
@@ -53,13 +39,11 @@ void pollRequests(spffts_iface iface){
             size_t read = fread(message, 1, BUFFER_SIZE, fp);
             total += read;
             if(read != BUFFER_SIZE) reading = 0;
-            SDLNet_TCP_Send(client, &read, sizeof(size_t));
-            SDLNet_TCP_Recv(client, test, 4);
-            SDLNet_TCP_Send(client, message, BUFFER_SIZE);
-            SDLNet_TCP_Recv(client, test, 4);
+            nn_send(iface -> sock, &read, sizeof(size_t), 0);
+            nn_send(iface -> sock, &message, BUFFER_SIZE, 0);
         }
         printf("Read %lu bytes\n", total);
-        SDLNet_TCP_Close(client);
+        nn_shutdown(iface -> sock, 0);
         fclose(fp);
         break;
     }
