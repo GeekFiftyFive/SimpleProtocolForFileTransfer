@@ -22,17 +22,23 @@ ARGS = -std=c99 -Wall -O3
 
 all: $(OBJECTS)
 
-run:
+run-client:
 	(./$(BUILDDIR)/$(TARGET-C))
 
-run-valgrind:
-	(valgrind --leak-check=full ./$(BUILDDIR)/$(TARGET))
+run-server:
+	(./$(BUILDDIR)/$(TARGET-S))
 
-run-gdb:
-	(gdb ./$(BUILDDIR)/$(TARGET))
+run-valgrind-client:
+	(valgrind --leak-check=full ./$(BUILDDIR)/$(TARGET-C))
+
+run-gdb-client:
+	(gdb ./$(BUILDDIR)/$(TARGET-C))
 
 $(BUILDDIR)/$(TARGET-C): $(OBJECTS)
 	$(CC) $(ARGS) $(SAMPDIR)/sampleClient.c $(LIBWSDIR) $(TARGET_LIBDIR) $(LDFLAGS) $(TARGET_ARCH) -o $@ $< -I$(OBJECTS) $(LIBS)
+
+$(BUILDDIR)/$(TARGET-S): $(OBJECTS)
+	$(CC) $(ARGS) $(SAMPDIR)/sampleServer.c $(LIBWSDIR) $(TARGET_LIBDIR) $(LDFLAGS) $(TARGET_ARCH) -o $@ $< -I$(OBJECTS) $(LIBS)
 
 $(OBJECTS): $(OBJ_DIR)/%.o : $(SRC_DIR)/%.c
 	$(CC) $(ARGS) $(TARGET_INCLUDES) $(TARGET_ARCH) -c $< -o $@
