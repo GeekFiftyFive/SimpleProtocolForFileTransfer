@@ -2,8 +2,8 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_net.h>
 
-struct spfft_iface {
-
+struct spfftc_iface {
+	TCPsocket sock;
 };
 
 int spfftc_init(){
@@ -22,8 +22,25 @@ int spfftc_init(){
 	return 0;
 }
 
-spfftc_iface spfftc_configureInterface(char *IP, int port){
+spfftc_iface spfftc_configureInterface(char *IP, __uint16_t port){
+	printf("Attempting connection to %s:%d\n", IP, port);
+	IPaddress addr;
+	//Resolve server details into IPaddress type
+	if(SDLNet_ResolveHost(&addr, IP, port) == -1){
+		fprintf(stderr, "SDLNet_ResolveHost: %s\n", SDLNet_GetError());
+		return NULL;
+	}
 
+	//Create an interface
+	spfftc_iface iface = malloc(sizeof(*iface));
+	iface -> sock = SDLNet_TCP_Open(&addr);
+	if(!iface -> sock){
+		fprintf(stderr, "SDLNet_TCP_Open: %s\n", SDLNet_GetError());
+		free(iface);
+		iface = NULL;
+	}
+
+	return iface;
 }
 
 int spfftc_getFile(spfftc_iface iface, char *path, FILE *fp){

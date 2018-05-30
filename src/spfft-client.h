@@ -2,6 +2,7 @@
 #define SPFFT_CLIENT
 
 #include <stdio.h>
+#include <unistd.h>
 
 typedef struct spfftc_iface* spfftc_iface;
 
@@ -21,7 +22,7 @@ int port - The port to connect via
 return   - A pointer to an spfftc_iface struct used to communicate with
            the server
 */
-spfftc_iface spfftc_configureInterface(char *IP, int port);
+spfftc_iface spfftc_configureInterface(char *IP, __uint16_t port);
 
 /*
 Gets a file from the remote server
