@@ -20,7 +20,7 @@ __uint16_t port - The port to connect via
 return   - A pointer to an spfftc_iface struct used to communicate with
            the server
 */
-spffts_iface spffts_openInterface(__uint16_t port);
+spffts_iface spffts_openInterface(__uint16_t port, __uint32_t delay);
 
 /*
 Polls requests from clients in an infinite loop

@@ -1,6 +1,7 @@
 #include "spfft-client.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_net.h>
+#include <string.h>
 
 struct spfftc_iface {
 	TCPsocket sock;
@@ -28,5 +29,7 @@ spfftc_iface spfftc_connectInterface(char *IP, __uint16_t port){
 }
 
 int spfftc_getFile(spfftc_iface iface, char *path, FILE *fp){
+	const char* message = "Hello, World!";
+	SDLNet_TCP_Send(iface -> sock, message, strlen(message) + 1);
     return 0;
 }

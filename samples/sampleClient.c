@@ -8,9 +8,11 @@ int main(int argc, char* args[]){
 
 	spfftc_iface iface = spfftc_connectInterface("localhost", 8080);
 
-	if(spfftc_getFile(iface, "testFile", testFile)) return 2;
+	if(!iface) return 2;
 
-	if(fclose(testFile)) return 3;
+	if(spfftc_getFile(iface, "testFile", testFile)) return 3;
+
+	if(fclose(testFile)) return 4;
 	
 	return 0;
 }

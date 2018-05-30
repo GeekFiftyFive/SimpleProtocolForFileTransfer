@@ -3,7 +3,8 @@
 #include "../src/spfft-shared.h"
 
 int main(int argc, char* args[]){
-    printf("Hello World!\n");
     if(spfft_init()) return 1;
+    spffts_iface iface = spffts_openInterface(8080, 100);
+    pollRequests(iface);
     return 0;
 }
