@@ -4,7 +4,7 @@
 #include <nanomsg/nn.h>
 #include <nanomsg/reqrep.h>
 
-#define BUFFER_SIZE 20000
+#define BUFFER_SIZE 65536
 
 struct spffts_iface {
     int sock;
