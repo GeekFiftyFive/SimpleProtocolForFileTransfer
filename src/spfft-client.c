@@ -3,7 +3,7 @@
 #include <SDL2/SDL_net.h>
 #include <string.h>
 
-#define BUFFER_SIZE 65536
+#define BUFFER_SIZE 20000
 
 struct spfftc_iface {
 	TCPsocket sock;
@@ -42,7 +42,9 @@ int spfftc_getFile(spfftc_iface iface, char *path, FILE *fp){
 	while(waiting){
         size_t len;
         SDLNet_TCP_Recv(iface -> sock, &len, sizeof(size_t));
+        SDLNet_TCP_Send(iface -> sock, "GOT", 4);
 		SDLNet_TCP_Recv(iface -> sock, buffer, BUFFER_SIZE);
+        SDLNet_TCP_Send(iface -> sock, "GOT", 4);
 		if(len < BUFFER_SIZE) waiting = 0;
         if(len > BUFFER_SIZE) printf("len: %lu\n", len);
 		bytes += len;

@@ -2,7 +2,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_net.h>
 
-#define BUFFER_SIZE 65536
+#define BUFFER_SIZE 20000
 
 struct spffts_iface {
     TCPsocket sock;
@@ -53,9 +53,10 @@ void pollRequests(spffts_iface iface){
             size_t read = fread(message, 1, BUFFER_SIZE, fp);
             total += read;
             if(read != BUFFER_SIZE) reading = 0;
-            else read = 65536;
             SDLNet_TCP_Send(client, &read, sizeof(size_t));
+            SDLNet_TCP_Recv(client, test, 4);
             SDLNet_TCP_Send(client, message, BUFFER_SIZE);
+            SDLNet_TCP_Recv(client, test, 4);
         }
         printf("Read %lu bytes\n", total);
         SDLNet_TCP_Close(client);
