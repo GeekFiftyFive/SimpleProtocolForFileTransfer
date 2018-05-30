@@ -3,7 +3,13 @@
 int main(int argc, char* args[]){
 	FILE *testFile = fopen("testFile", "wb");
 
-	spfft_getFile(NULL, "testFile", testFile);
+	if(spfftc_init()) return 1;
 
-	return fclose(testFile);
+	spfftc_iface iface = spfftc_configureInterface("localhost", 8080);
+
+	if(spfftc_getFile(iface, "testFile", testFile)) return 2;
+
+	if(fclose(testFile)) return 3;
+	
+	return 0;
 }

@@ -3,14 +3,25 @@
 
 #include <stdio.h>
 
-typedef struct spfft_iface* spfft_iface;
+typedef struct spfftc_iface* spfftc_iface;
 
 /*
 Initialises SDL and SDL_net, which are used for TCP/IP communication
 
 return      - returns 0 on success
 */
-int spfft_init();
+int spfftc_init();
+
+/*
+Connects to a remote spfft server
+
+char *IP - The IP address of the remote server
+int port - The port to connect via
+
+return   - A pointer to an spfftc_iface struct used to communicate with
+           the server
+*/
+spfftc_iface spfftc_configureInterface(char *IP, int port);
 
 /*
 Gets a file from the remote server
@@ -20,7 +31,7 @@ FILE *fp   - The file to write to on the local machine, must be opened with mode
 
 return     - returns 0 on success
 */
-int spfft_getFile(spfft_iface iface, char *path, FILE *fp);
+int spfftc_getFile(spfftc_iface iface, char *path, FILE *fp);
 
 #endif //SPFFT_CLIENT
 

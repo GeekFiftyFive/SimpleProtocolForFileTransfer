@@ -6,7 +6,7 @@ struct spfft_iface {
 
 };
 
-int spfft_init(){
+int spfftc_init(){
 	//Init SDL
 	if(SDL_Init(0) == -1){
 		fprintf(stderr, "SDL_Init: %s\n", SDL_GetError());
@@ -22,6 +22,10 @@ int spfft_init(){
 	return 0;
 }
 
-int spfft_getFile(spfft_iface iface, char *path, FILE *fp){
+spfftc_iface spfftc_configureInterface(char *IP, int port){
+
+}
+
+int spfftc_getFile(spfftc_iface iface, char *path, FILE *fp){
     return 0;
 }
