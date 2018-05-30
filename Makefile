@@ -15,7 +15,7 @@ INCLUDES := $(wildcard $(SRC_DIR)/*.h)
 OBJECTS  := $(SOURCES:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 
 #LDFLAGS += -static
-LIBS += -lm -lSDL2 -lSDL2_net -lnanomsg
+LIBS += -lm -lnanomsg
 ARGS = -std=c99 -Wall -O3 
 
 ### Targets ###

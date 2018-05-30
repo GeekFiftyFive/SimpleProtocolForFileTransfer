@@ -1,6 +1,6 @@
 #include "spfft-client.h"
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_net.h>
+#include <stdlib.h>
+#include <time.h>
 #include <nanomsg/nn.h>
 #include <nanomsg/reqrep.h>
 #include <string.h>
@@ -11,12 +11,12 @@ struct spfftc_iface {
 	int sock;
 };
 
-spfftc_iface spfftc_connectInterface(char *IP, __uint16_t port){
+spfftc_iface spfftc_connectInterface(char *url){
 	//Create an interface
 	spfftc_iface iface = malloc(sizeof(*iface));
 	iface -> sock = nn_socket(AF_SP, NN_REQ);
-	if(iface -> sock < 0 || nn_connect(iface -> sock, IP) < 0)
-		fprintf(stderr, "Error connecting to socket with IP %s\n", IP);
+	if(iface -> sock < 0 || nn_connect(iface -> sock, url) < 0)
+		fprintf(stderr, "Error connecting to socket with IP %s\n", url);
 
 	return iface;
 }
@@ -27,7 +27,7 @@ int spfftc_getFile(spfftc_iface iface, char *path, FILE *fp){
 	__uint8_t waiting = 1;
 	nn_send(iface -> sock, message, strlen(message) + 1, 0);
 
-	Uint32 start = SDL_GetTicks();
+	clock_t begin = clock();
 	size_t bytes = 0;
 
 	while(waiting){
@@ -45,9 +45,8 @@ int spfftc_getFile(spfftc_iface iface, char *path, FILE *fp){
 		nn_freemsg(len);
 	}
 
-	Uint32 end = SDL_GetTicks();
-	end -= start;
-	float duration = end / 1000;
+	clock_t end = clock();
+	float duration = (float)(end - begin) / CLOCKS_PER_SEC;
 	printf("Transferred %lu bytes in %f seconds (%f MiB/s)\n", bytes, duration, ((float) bytes / 1000000) / duration);
 	nn_shutdown(iface -> sock, 0);
     return 0;

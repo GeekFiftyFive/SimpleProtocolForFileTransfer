@@ -1,6 +1,5 @@
 #include "spfft-server.h"
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_net.h>
+#include <stdlib.h>
 #include <nanomsg/nn.h>
 #include <nanomsg/reqrep.h>
 
@@ -11,13 +10,13 @@ struct spffts_iface {
     __uint32_t delay;
 };
 
-spffts_iface spffts_openInterface(char *IP, __uint32_t delay){
+spffts_iface spffts_openInterface(char *url, __uint32_t delay){
    	//Create interface
     spffts_iface iface = malloc(sizeof(*iface));
     iface -> sock = nn_socket(AF_SP, NN_REP);
     iface -> delay = delay;
-    if(iface -> sock < 0 || nn_bind(iface -> sock, IP) < 0)
-		fprintf(stderr, "Error binding socket with IP %s\n", IP);
+    if(iface -> sock < 0 || nn_bind(iface -> sock, url) < 0)
+		fprintf(stderr, "Error binding socket with IP %s\n", url);
 
     return iface;
 }
@@ -37,6 +36,7 @@ void pollRequests(spffts_iface iface){
 
         __uint8_t reading = 1;
         size_t total = 0;
+		//TODO: Handle more than one user
         while(reading){
             size_t read = fread(buffer, 1, BUFFER_SIZE, fp);
             total += read;

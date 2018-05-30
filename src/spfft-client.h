@@ -8,13 +8,12 @@ typedef struct spfftc_iface* spfftc_iface;
 /*
 Connects to a remote spfft server
 
-char *IP 		- The IP address of the remote server
-__uint16_t port - The port to connect via
+char *url 		- The url of the remote server
 
 return   - A pointer to an spfftc_iface struct used to communicate with
            the server
 */
-spfftc_iface spfftc_connectInterface(char *IP, __uint16_t port);
+spfftc_iface spfftc_connectInterface(char *url);
 
 /*
 Gets a file from the remote server
