@@ -2,6 +2,8 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_net.h>
 
+#define BUFFER_SIZE 65536
+
 struct spffts_iface {
     TCPsocket sock;
     __uint32_t delay;
@@ -30,7 +32,8 @@ spffts_iface spffts_openInterface(__uint16_t port, __uint32_t delay){
 
 void pollRequests(spffts_iface iface){
     TCPsocket client;
-    char message[255];
+    char message[BUFFER_SIZE];
+    char test[4];
     int len;
     while(1){
         client = SDLNet_TCP_Accept(iface -> sock);
@@ -39,7 +42,7 @@ void pollRequests(spffts_iface iface){
             continue;
         }
 
-        len = SDLNet_TCP_Recv(client, message, 255);
+        len = SDLNet_TCP_Recv(client, message, BUFFER_SIZE);
         printf("Message: %s\n", message);
         //TODO: Parse message
         FILE *fp = fopen("toUpload", "r");
@@ -47,11 +50,12 @@ void pollRequests(spffts_iface iface){
         __uint8_t reading = 1;
         size_t total = 0;
         while(reading){
-            size_t read = fread(message + 1, 1, 254, fp);
+            size_t read = fread(message, 1, BUFFER_SIZE, fp);
             total += read;
-            if(read < 254) reading = 0;
-            message[0] = read;
-            SDLNet_TCP_Send(client, message, 255);
+            if(read != BUFFER_SIZE) reading = 0;
+            else read = 65536;
+            SDLNet_TCP_Send(client, &read, sizeof(size_t));
+            SDLNet_TCP_Send(client, message, BUFFER_SIZE);
         }
         printf("Read %lu bytes\n", total);
         SDLNet_TCP_Close(client);
