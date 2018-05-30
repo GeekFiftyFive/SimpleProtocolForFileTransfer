@@ -22,4 +22,11 @@ return   - A pointer to an spfftc_iface struct used to communicate with
 */
 spffts_iface spffts_openInterface(__uint16_t port);
 
+/*
+Polls requests from clients in an infinite loop
+
+spffts_iface iface - The interface to poll requests on
+*/
+void pollRequests(spffts_iface iface);
+
 #endif //SPFFT_SERVER
