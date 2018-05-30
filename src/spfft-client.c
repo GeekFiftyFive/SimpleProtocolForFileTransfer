@@ -33,7 +33,9 @@ int spfftc_getFile(spfftc_iface iface, char *path, FILE *fp){
 	while(waiting){
     	size_t *len = NULL;
         nn_recv(iface -> sock, &len, NN_MSG, 0);
+		nn_send(iface -> sock, "GOT", 4, 0);
 		nn_recv(iface -> sock, &buffer, NN_MSG, 0);
+		nn_send(iface -> sock, "GOT", 4, 0);
 
 		if(*len < BUFFER_SIZE) waiting = 0;
         if(*len > BUFFER_SIZE) printf("len: %lu\n", *len);
