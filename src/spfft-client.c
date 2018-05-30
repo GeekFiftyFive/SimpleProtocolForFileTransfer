@@ -3,6 +3,8 @@
 #include <SDL2/SDL_net.h>
 #include <string.h>
 
+#define BUFFER_SIZE 255
+
 struct spfftc_iface {
 	TCPsocket sock;
 };
@@ -29,7 +31,17 @@ spfftc_iface spfftc_connectInterface(char *IP, __uint16_t port){
 }
 
 int spfftc_getFile(spfftc_iface iface, char *path, FILE *fp){
-	const char* message = "Hello, World!";
+	unsigned char buffer[BUFFER_SIZE];
+	const char* message = "0 testFile";
+	__uint8_t waiting = 1;
 	SDLNet_TCP_Send(iface -> sock, message, strlen(message) + 1);
+
+	while(waiting){
+		SDLNet_TCP_Recv(iface -> sock, buffer, BUFFER_SIZE);
+		if(buffer[0] < BUFFER_SIZE - 1) waiting = 0;
+		printf("Bytes in message: %d\n", buffer[0]);
+		fwrite(buffer + 1, 1, buffer[0], fp);
+	}
+	
     return 0;
 }

@@ -30,7 +30,7 @@ spffts_iface spffts_openInterface(__uint16_t port, __uint32_t delay){
 
 void pollRequests(spffts_iface iface){
     TCPsocket client;
-    char message[1024];
+    char message[255];
     int len;
     while(1){
         client = SDLNet_TCP_Accept(iface -> sock);
@@ -39,9 +39,23 @@ void pollRequests(spffts_iface iface){
             continue;
         }
 
-        len = SDLNet_TCP_Recv(client, message, 1024);
+        len = SDLNet_TCP_Recv(client, message, 255);
         printf("Message: %s\n", message);
+        //TODO: Parse message
+        FILE *fp = fopen("toUpload.jpg", "r");
+
+        __uint8_t reading = 1;
+        size_t total = 0;
+        while(reading){
+            size_t read = fread(message + 1, 1, 254, fp);
+            total += read;
+            if(read < 254) reading = 0;
+            message[0] = read;
+            SDLNet_TCP_Send(client, message, 255);
+        }
+        printf("Read %d bytes\n", total);
         SDLNet_TCP_Close(client);
+        fclose(fp);
         break;
     }
 }
