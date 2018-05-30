@@ -53,7 +53,7 @@ void pollRequests(spffts_iface iface){
             message[0] = read;
             SDLNet_TCP_Send(client, message, 255);
         }
-        printf("Read %u bytes\n", total);
+        printf("Read %lu bytes\n", total);
         SDLNet_TCP_Close(client);
         fclose(fp);
         break;
