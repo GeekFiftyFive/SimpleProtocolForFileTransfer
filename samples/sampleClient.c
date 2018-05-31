@@ -16,6 +16,9 @@ char *getCommand(){
         offset++;
     }
 
+    if(offset == size) output = realloc(output, size + 1);
+    output[offset] = '\0';
+
     return output;
 }
 
@@ -50,13 +53,15 @@ char **parseCommand(int *count){
     return tokens;
 }
 
-void freeTokens(char **tokens){
+void freeTokens(char **tokens, int count){
+    for(int i = 0; i < count; i++) free(tokens[i]);
+    free(tokens);
 }
 
 int main(int argc, char* argv[]){
-    //if(argc < 2) return 1;
-    //spfftc_iface iface = spfftc_connectInterface(argv[1]);
-    //if(!iface) return 2;
+    if(argc < 2) return 1;
+    spfftc_iface iface = spfftc_connectInterface(argv[1]);
+    if(!iface) return 2;
 
     printf("Enter a command, type help for a list of commands\n");
 
@@ -66,19 +71,17 @@ int main(int argc, char* argv[]){
         int count;
         char **tokens = parseCommand(&count);
 
-        for(int i = 0; i < count; i++){
-            printf("Token %d: %s\n", i, tokens[i]);
-        }
+        if(strcmp(tokens[0], "get") == 0 && count == 2){
+            FILE *testFile = fopen(tokens[1], "wb");
 
-        freeTokens(tokens);
-        running = 0;
+	        if(spfftc_getFile(iface, tokens[1], testFile)) fprintf(stderr, "Error getting file\n");
+
+	        if(fclose(testFile)) fprintf(stderr, "Error closing file\n");
+        } else if(strcmp(tokens[0], "exit") == 0) running = 0;
+        else printf("Error: Invalid command, %s\n", tokens[0]);
+
+        freeTokens(tokens, count);
     }
-	
-    //FILE *testFile = fopen("testFile", "wb");
-
-	//if(spfftc_getFile(iface, "testFile", testFile)) return 3;
-
-	//if(fclose(testFile)) return 4;
 	
 	return 0;
 }

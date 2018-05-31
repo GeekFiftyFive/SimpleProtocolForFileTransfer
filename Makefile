@@ -23,7 +23,7 @@ ARGS = -std=c99 -Wall -O3
 all: $(OBJECTS)
 
 run-client:
-	(./$(BUILDDIR)/$(TARGET-C))
+	(./$(BUILDDIR)/$(TARGET-C) tcp://192.168.0.11:8080)
 
 run-server:
 	(./$(BUILDDIR)/$(TARGET-S))
