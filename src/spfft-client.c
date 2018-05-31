@@ -24,7 +24,8 @@ spfftc_iface spfftc_connectInterface(char *url){
 
 int spfftc_getFile(spfftc_iface iface, char *path, FILE *fp){
 	char *buffer = NULL;
-	const char* message = "0toUpload";
+	char* message = malloc(strlen(path) + 2);
+    sprintf(message, "0%s", path); //Create message with opcode '0'
 	__uint8_t waiting = 1;
 	nn_send(iface -> sock, message, strlen(message) + 1, 0);
     spfft_clientSession *session = NULL;
@@ -52,6 +53,7 @@ int spfftc_getFile(spfftc_iface iface, char *path, FILE *fp){
 	clock_t end = clock();
 	float duration = (float)(end - begin) / CLOCKS_PER_SEC;
     free(blockSizeRequest);
+    free(message);
     //free(block);
 	printf("Transferred %lu bytes in %f seconds (%f MB/s)\n", bytes, duration, ((float) bytes / 1000000) / duration);
 	nn_shutdown(iface -> sock, 0);
