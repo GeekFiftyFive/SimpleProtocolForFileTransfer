@@ -67,6 +67,7 @@ void getBlock(spffts_iface iface, char* message){
         iface -> lastIndex = id;
     }
     nn_send(iface -> sock, block, sizeof(size_t) + BUFFER_SIZE, 0);
+    free(block);
 }
 
 void startSession(spffts_iface iface, char *message){
