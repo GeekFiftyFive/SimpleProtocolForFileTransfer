@@ -80,8 +80,7 @@ void startSession(spffts_iface iface, char *message){
     }
     
     __uint32_t id = iface -> lastIndex;
-    //iface -> sessions[id].fp = fopen(message + 1, "r");
-    iface -> sessions[id].fp = fopen("toUpload", "r");
+    iface -> sessions[id].fp = fopen(message + 1, "r");
     iface -> sessions[id].secret = rand();
     iface -> sessions[id].progress = 0.f;
     spfft_clientSession session = {id, iface -> sessions[id].secret};

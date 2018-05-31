@@ -24,7 +24,7 @@ spfftc_iface spfftc_connectInterface(char *url){
 
 int spfftc_getFile(spfftc_iface iface, char *path, FILE *fp){
 	char *buffer = NULL;
-	const char* message = "0testFile";
+	const char* message = "0toUpload";
 	__uint8_t waiting = 1;
 	nn_send(iface -> sock, message, strlen(message) + 1, 0);
     spfft_clientSession *session = NULL;
