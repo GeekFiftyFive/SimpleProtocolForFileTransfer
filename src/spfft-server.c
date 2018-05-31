@@ -3,6 +3,7 @@
 #include <nanomsg/nn.h>
 #include <nanomsg/reqrep.h>
 #include <time.h>
+#include <dirent.h>
 #include "spfft-shared.h"
 
 #define BUFFER_SIZE 65536
@@ -49,6 +50,27 @@ void spffts_closeInterface(spffts_iface iface){
     free(iface);
 }
 
+void getList(spffts_iface iface, char *message){
+    DIR *dir;
+    struct dirent *ent;
+    dir = opendir("./");
+    int size = 10, offset = 0;
+    char *list = malloc(size);
+    if(dir){
+        while((ent = readdir(dir))){
+            if(offset + strlen(ent -> d_name) > size){
+                size *= 2;
+                size += strlen(ent -> d_name) + 2;
+                list = realloc(list, size);
+            }
+            strcat(list + offset, " ");
+            strcat(list + offset, ent -> d_name);
+            offset += strlen(ent -> d_name) + 1;
+        }
+        nn_send(iface -> sock, list, strlen(list) + 1, 0);
+    } else nn_send(iface -> sock, "list_err", 9, 0);
+}
+
 void getBlock(spffts_iface iface, char* message){
     spfft_clientSession session;
     memcpy(&session, message + 1, sizeof(spfft_clientSession));
@@ -74,7 +96,7 @@ void startSession(spffts_iface iface, char *message){
     while(iface -> sessions[iface -> lastIndex].fp){
         if(iface -> lastIndex > iface -> size){
             iface -> size *= 2;
-            realloc(iface -> sessions, iface -> size);
+            iface -> sessions = realloc(iface -> sessions, iface -> size);
         }
         iface -> lastIndex++;
     }
@@ -104,30 +126,12 @@ void pollRequests(spffts_iface iface){
             case '1': //Get next block
                 getBlock(iface, message);
                 break;
+            case '2': //Get list of files in directory
+                getList(iface, message);
+                break;
             default:
                 break;
         }
         nn_freemsg(message);
-        /*FILE *fp = fopen("toUpload", "r");
-
-        __uint8_t reading = 1;
-        size_t total = 0;
-		//TODO: Handle more than one user
-        while(reading){
-            size_t read = fread(buffer, 1, BUFFER_SIZE, fp);
-            total += read;
-            if(read != BUFFER_SIZE) reading = 0;
-            nn_send(iface -> sock, &read, sizeof(size_t), 0);
-			nn_recv(iface -> sock, &message, NN_MSG, 0);
-			nn_freemsg(message);
-            nn_send(iface -> sock, buffer, BUFFER_SIZE, 0);
-			nn_recv(iface -> sock, &message, NN_MSG, 0);
-			nn_freemsg(message);
-        }
-        printf("Read %lu bytes\n", total);*/
-        //if(message[0] != '1') continue;
-        //nn_shutdown(iface -> sock, 0);
-        //break;
-        //fclose(fp);
     }
 }

@@ -59,3 +59,12 @@ int spfftc_getFile(spfftc_iface iface, char *path, FILE *fp){
 	nn_shutdown(iface -> sock, 0);
     return 0;
 }
+
+char *spfftc_getList(spfftc_iface iface, char *path){
+    char *message = malloc(strlen(path) + 2);
+    sprintf(message, "2%s", path); //Create a message with opcode 2
+    nn_send(iface -> sock, message, (strlen(path) + 2), 0);
+    char *list = NULL;
+    nn_recv(iface -> sock, &list, NN_MSG, 0);
+    return list;
+}

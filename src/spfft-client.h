@@ -25,5 +25,14 @@ return     - returns 0 on success
 */
 int spfftc_getFile(spfftc_iface iface, char *path, FILE *fp);
 
+/*
+Gets a list of files and directories within a directory
+
+char *path - The path on the server to get subdirectories of
+
+return - returns a list of files and directories separated by spaces
+*/
+char *spfftc_getList(spfftc_iface iface, char *path);
+
 #endif //SPFFT_CLIENT
 

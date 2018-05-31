@@ -78,6 +78,8 @@ int main(int argc, char* argv[]){
 
 	        if(fclose(testFile)) fprintf(stderr, "Error closing file\n");
         } else if(strcmp(tokens[0], "exit") == 0) running = 0;
+        else if(strcmp(tokens[0], "ls") == 0 && count == 2) 
+            printf("%s\n", spfftc_getList(iface, tokens[1]));
         else printf("Error: Invalid command, %s\n", tokens[0]);
 
         freeTokens(tokens, count);
