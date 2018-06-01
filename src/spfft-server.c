@@ -5,12 +5,21 @@
 #include <time.h>
 #include <dirent.h>
 #include "spfft-shared.h"
+#include <uthash.h>
 
 #define BUFFER_SIZE 65536
 
-typedef struct fileIndex{
+typedef struct filePaths{
     __uint32_t bufferSize, length;
     char **paths;
+} filePaths;
+
+//Stores the index at which a file path is stored
+//This is used to lookup file paths when a session is started
+typedef struct fileIndex{
+    char *path;
+    __uint32_t index;
+    UT_hash_handle hh;
 } fileIndex;
 
 typedef struct session{
@@ -26,7 +35,8 @@ struct spffts_iface {
 	session *sessions;
     __uint32_t lastIndex;
     __uint32_t size;
-    fileIndex files;
+    filePaths files;
+    fileIndex *indices;
 };
 
 spffts_iface spffts_openInterface(char *url, __uint32_t delay){
@@ -36,6 +46,10 @@ spffts_iface spffts_openInterface(char *url, __uint32_t delay){
     iface -> delay = delay;
     iface -> size = 1024;
     iface -> sessions = malloc(sizeof(struct session) * iface -> size);
+    iface -> files.bufferSize = 4;
+    iface -> files.length = 0;
+    iface -> files.paths = malloc(iface -> files.bufferSize);
+    iface -> indices = NULL;
     
     //Seed the random number generator for shared secrets
     time_t t;
@@ -52,6 +66,8 @@ spffts_iface spffts_openInterface(char *url, __uint32_t delay){
 
 void spffts_closeInterface(spffts_iface iface){
     free(iface -> sessions);
+    for(int i = 0; i < iface -> files.length; i++) free(iface -> files.paths[i]);
+    free(iface -> files.paths);
     nn_shutdown(iface -> sock, 0);
     free(iface);
 }
@@ -119,7 +135,26 @@ void startSession(spffts_iface iface, char *message){
     iface -> sessions[id].secret = rand();
     iface -> sessions[id].progress = 0.f;
     iface -> sessions[id].block = 0;
-    spfft_clientSession session = {id, iface -> sessions[id].secret, 0};
+
+    //Check if path is indexed, if not, index it
+    fileIndex *index;
+    HASH_FIND_STR(iface -> indices, message + 1, index);
+    if(!index){ //The key was not found in the hash
+        iface -> files.length++;
+        if(iface -> files.length == iface -> files.bufferSize){
+            iface -> files.bufferSize *= 2;
+            iface -> files.paths = realloc(iface -> files.paths, iface -> files.bufferSize);
+        }
+
+        iface -> files.paths[iface -> files.length] = malloc(strlen(message + 1) + 1);
+        strcpy(iface -> files.paths[iface -> files.length], message + 1);
+        index = malloc(sizeof(*index));
+        index -> index = iface -> files.length;
+        index -> path = iface -> files.paths[iface -> files.length];
+        HASH_ADD_STR(iface -> indices, path, index);
+    }
+
+    spfft_clientSession session = {id, iface -> sessions[id].secret, 0, index -> index};
     nn_send(iface -> sock, &session, sizeof(spfft_clientSession), 0);
     printf("ID: %d, Secret: %d\n", id, iface -> sessions[id].secret);
 }
