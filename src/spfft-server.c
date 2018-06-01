@@ -8,6 +8,11 @@
 
 #define BUFFER_SIZE 65536
 
+typedef struct fileIndex{
+    __uint32_t bufferSize, length;
+    char **paths;
+} fileIndex;
+
 typedef struct session{
 	FILE *fp;
 	int secret;
@@ -21,6 +26,7 @@ struct spffts_iface {
 	session *sessions;
     __uint32_t lastIndex;
     __uint32_t size;
+    fileIndex files;
 };
 
 spffts_iface spffts_openInterface(char *url, __uint32_t delay){
@@ -69,6 +75,8 @@ void getList(spffts_iface iface, char *message){
         }
         nn_send(iface -> sock, list, strlen(list) + 1, 0);
     } else nn_send(iface -> sock, "list_err", 9, 0);
+
+    closedir(dir);
 }
 
 void getBlock(spffts_iface iface, char* message){
