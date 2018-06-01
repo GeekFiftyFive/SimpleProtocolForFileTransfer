@@ -27,6 +27,7 @@ typedef struct session{
 	int secret;
 	float progress;
     __uint32_t block;
+    __uint32_t index;
 } session;
 
 struct spffts_iface {
@@ -99,6 +100,9 @@ void getBlock(spffts_iface iface, char* message){
     spfft_clientSession session;
     memcpy(&session, message + 1, sizeof(spfft_clientSession));
     __uint32_t id = session.id;
+    if(!iface -> sessions[id].fp || iface -> sessions[id].index != session.index){
+        //Create a new session
+    }
     if(session.secret != iface -> sessions[id].secret){
         nn_send(iface -> sock, "inv_secret", 11, 0);
         return;
@@ -153,7 +157,7 @@ void startSession(spffts_iface iface, char *message){
         index -> path = iface -> files.paths[iface -> files.length];
         HASH_ADD_STR(iface -> indices, path, index);
     }
-
+    iface -> sessions[id].index = index -> index;
     spfft_clientSession session = {id, iface -> sessions[id].secret, 0, index -> index};
     nn_send(iface -> sock, &session, sizeof(spfft_clientSession), 0);
     printf("ID: %d, Secret: %d\n", id, iface -> sessions[id].secret);
