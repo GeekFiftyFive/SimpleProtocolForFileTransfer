@@ -6,6 +6,7 @@
 typedef struct spfft_clientSession{
     __uint32_t id;
     int secret;
+    __uint32_t block;
 } spfft_clientSession;
 
 #endif //__SPFFT_SHARED

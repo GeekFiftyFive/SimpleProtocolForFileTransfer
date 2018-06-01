@@ -66,6 +66,7 @@ int main(int argc, char* argv[]){
     printf("Enter a command, type help for a list of commands\n");
 
     __uint8_t running = 1;
+
     while(running){
         printf("> ");
         int count;

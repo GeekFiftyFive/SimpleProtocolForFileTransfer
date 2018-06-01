@@ -32,29 +32,40 @@ int spfftc_getFile(spfftc_iface iface, char *path, FILE *fp){
     nn_recv(iface -> sock, &session, NN_MSG, 0);
     printf("Session{id: %d, secret: %d}\n", session -> id, session -> secret);
 
-    void *blockSizeRequest = malloc(1 + sizeof(spfft_clientSession));
-    memcpy(blockSizeRequest, "1", 1);
-    memcpy(blockSizeRequest + 1, session, sizeof(spfft_clientSession));
+    void *blockRequest = malloc(1 + sizeof(spfft_clientSession));
+    memcpy(blockRequest, "1", 1);
+    memcpy(blockRequest + 1, session, sizeof(spfft_clientSession));
 
 	clock_t begin = clock();
 	size_t bytes = 0;
-    void *block = malloc(BUFFER_SIZE + sizeof(size_t));
+    void *block = NULL;
 
 	while(waiting){
-        nn_send(iface -> sock, blockSizeRequest, 1 + sizeof(spfft_clientSession), 0);
+        //Fetch next block
+        nn_send(iface -> sock, blockRequest, 1 + sizeof(spfft_clientSession), 0);
         nn_recv(iface -> sock, &block, NN_MSG, 0);
+
+        //Update block counter
+        session -> block++;
+        memcpy(blockRequest + 1, session, sizeof(spfft_clientSession));
+
+        //Write buffer to disk
         size_t size;
         memcpy(&size, block, sizeof(size_t));
         bytes += size;
         fwrite(block + sizeof(size_t), 1, size, fp);
+        nn_freemsg(block);
+
+        //Check if this is the end of the file
         if(size < BUFFER_SIZE) waiting = 0;
 	}
 
 	clock_t end = clock();
 	float duration = (float)(end - begin) / CLOCKS_PER_SEC;
-    free(blockSizeRequest);
+    free(blockRequest);
     free(message);
-    //free(block);
+    nn_freemsg(session);
+
 	printf("Transferred %lu bytes in %f seconds (%f MB/s)\n", bytes, duration, ((float) bytes / 1000000) / duration);
 	nn_shutdown(iface -> sock, 0);
     return 0;

@@ -12,6 +12,7 @@ typedef struct session{
 	FILE *fp;
 	int secret;
 	float progress;
+    __uint32_t block;
 } session;
 
 struct spffts_iface {
@@ -31,7 +32,6 @@ spffts_iface spffts_openInterface(char *url, __uint32_t delay){
     iface -> sessions = malloc(sizeof(struct session) * iface -> size);
     
     //Seed the random number generator for shared secrets
-    //TODO: Use a cryptographically random number
     time_t t;
     srand((unsigned) time(&t));
 
@@ -80,6 +80,11 @@ void getBlock(spffts_iface iface, char* message){
         return;
     }
 
+    if(session.block != iface -> sessions[id].block){
+        iface -> sessions[id].block - session.block;
+        fseek(iface -> sessions[id].fp, (long int) session.block * BUFFER_SIZE, SEEK_SET);
+    }
+
     void *block = malloc(BUFFER_SIZE + sizeof(size_t));
     size_t read = fread(block + sizeof(size_t), 1, BUFFER_SIZE, iface -> sessions[id].fp);
     memcpy(block, &read, sizeof(size_t));
@@ -105,7 +110,8 @@ void startSession(spffts_iface iface, char *message){
     iface -> sessions[id].fp = fopen(message + 1, "r");
     iface -> sessions[id].secret = rand();
     iface -> sessions[id].progress = 0.f;
-    spfft_clientSession session = {id, iface -> sessions[id].secret};
+    iface -> sessions[id].block = 0;
+    spfft_clientSession session = {id, iface -> sessions[id].secret, 0};
     nn_send(iface -> sock, &session, sizeof(spfft_clientSession), 0);
     printf("ID: %d, Secret: %d\n", id, iface -> sessions[id].secret);
 }
